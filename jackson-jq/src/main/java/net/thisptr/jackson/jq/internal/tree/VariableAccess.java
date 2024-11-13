@@ -30,7 +30,7 @@ public class VariableAccess implements Expression {
 		} else {
 			final ValueWithPath value = scope.getValueWithPath(name);
 			if (value != null) {
-				output.emit(value.value(), null);
+				output.emit(value.value().get(), null);
 				return;
 			}
 

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,25 +49,25 @@ public class Scope {
 	private ModuleLoader moduleLoader;
 
 	public interface ValueWithPath {
-		JsonNode value();
+		Supplier<JsonNode> value();
 
 		Path path();
 	}
 
 	private static class ValueWithPathImpl implements ValueWithPath {
 		@JsonProperty("value")
-		private final JsonNode value;
+		private final Supplier<JsonNode> value;
 
 		@JsonProperty("path")
 		private final Path path;
 
-		public ValueWithPathImpl(final JsonNode value, final Path path) {
+		public ValueWithPathImpl(final Supplier<JsonNode> value, final Path path) {
 			this.value = value;
 			this.path = path;
 		}
 
 		@Override
-		public JsonNode value() {
+		public Supplier<JsonNode> value() {
 			return value;
 		}
 
@@ -139,8 +140,16 @@ public class Scope {
 	public void setValue(final String name, final JsonNode value) {
 		setValueWithPath(name, value, null);
 	}
+	
+	public void setValue (final String name, Supplier<JsonNode> supplier) {
+		setValueWithPath (name, supplier, null);
+	}
 
 	public void setValueWithPath(final String name, final JsonNode value, final Path path) {
+		setValueWithPath(name, () -> value, path);
+	}
+	
+	public  void setValueWithPath(final String name, final Supplier<JsonNode> value, final Path path) {
 		if (values == null)
 			values = new HashMap<>();
 		values.put(name, new ValueWithPathImpl(value, path));
@@ -161,7 +170,7 @@ public class Scope {
 		final ValueWithPath value = getValueWithPath(name);
 		if (value == null)
 			return null;
-		return value.value();
+		return value.value().get();
 	}
 
 	@JsonIgnore
