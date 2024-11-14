@@ -49,31 +49,51 @@ public class Scope {
 	private ModuleLoader moduleLoader;
 
 	public interface ValueWithPath {
-		Supplier<JsonNode> value();
+		JsonNode value();
 
 		Path path();
 	}
 
-	private static class ValueWithPathImpl implements ValueWithPath {
-		@JsonProperty("value")
-		private final Supplier<JsonNode> value;
-
-		@JsonProperty("path")
+	private static abstract class AbstractValueWithPath implements ValueWithPath {
 		private final Path path;
-
-		public ValueWithPathImpl(final Supplier<JsonNode> value, final Path path) {
-			this.value = value;
+		
+		public AbstractValueWithPath (Path path) {
 			this.path = path;
 		}
-
-		@Override
-		public Supplier<JsonNode> value() {
-			return value;
-		}
-
+		
 		@Override
 		public Path path() {
 			return path;
+		}
+	}
+	
+	private static class ValueSupplierImpl extends AbstractValueWithPath {
+		private final Supplier<JsonNode> valueSupplier;
+		
+		public ValueSupplierImpl(final Supplier<JsonNode> valueSupplier, final Path path) {
+			super(path);
+			this.valueSupplier = valueSupplier;
+		}
+
+		@Override
+		public JsonNode value() {
+			return valueSupplier.get();
+		}
+	}
+	
+	private static class ValueWithPathImpl extends AbstractValueWithPath {
+		@JsonProperty("value")
+		private final JsonNode value;
+		
+		public ValueWithPathImpl(final JsonNode value, final Path path) {
+			super(path);
+			this.value = value;
+			
+		}
+
+		@Override
+		public JsonNode value() {
+			return value;
 		}
 	}
 
@@ -146,13 +166,15 @@ public class Scope {
 	}
 
 	public void setValueWithPath(final String name, final JsonNode value, final Path path) {
-		setValueWithPath(name, () -> value, path);
+		if (values == null)
+			values = new HashMap<>();
+		values.put(name, new ValueWithPathImpl(value, path));
 	}
 	
 	public  void setValueWithPath(final String name, final Supplier<JsonNode> value, final Path path) {
 		if (values == null)
 			values = new HashMap<>();
-		values.put(name, new ValueWithPathImpl(value, path));
+		values.put(name, new ValueSupplierImpl(value, path));
 	}
 
 	public ValueWithPath getValueWithPath(final String name) {
@@ -170,7 +192,7 @@ public class Scope {
 		final ValueWithPath value = getValueWithPath(name);
 		if (value == null)
 			return null;
-		return value.value().get();
+		return value.value();
 	}
 
 	@JsonIgnore
