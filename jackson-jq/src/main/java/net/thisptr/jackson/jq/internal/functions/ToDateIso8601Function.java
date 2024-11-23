@@ -21,7 +21,7 @@ import java.util.List;
 public class ToDateIso8601Function implements Function  {
     @Override
     public void apply(final Scope scope, final List<Expression> args, final JsonNode in, final Path ipath, final PathOutput output, final Version version) throws JsonQueryException {
-        Preconditions.checkInputType("fromdateiso8601", in, JsonNodeType.STRING);
+        Preconditions.checkInputType("todateiso8601", in, JsonNodeType.NUMBER);
         try {
             long epochSeconds = in.asLong();
             ZonedDateTime dateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC);
