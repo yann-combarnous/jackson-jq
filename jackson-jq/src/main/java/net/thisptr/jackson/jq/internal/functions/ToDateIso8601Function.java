@@ -26,7 +26,7 @@ public class ToDateIso8601Function implements Function  {
             long epochSeconds = in.asLong();
             ZonedDateTime dateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC);
             String iso8601String = dateTime.format(DateTimeFormatter.ISO_INSTANT);
-            output.emit(new TextNode((iso8601String)), null);
+            output.emit(new TextNode(iso8601String), null);
         } catch (DateTimeParseException e) {
             throw new JsonQueryException(e);
         }        
