@@ -9,11 +9,8 @@ import net.thisptr.jackson.jq.exception.JsonQueryException;
 import net.thisptr.jackson.jq.internal.misc.Preconditions;
 import net.thisptr.jackson.jq.path.Path;
 
+import java.time.DateTimeException;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @AutoService(Function.class)
@@ -24,10 +21,9 @@ public class ToDateIso8601Function implements Function  {
         Preconditions.checkInputType("todateiso8601", in, JsonNodeType.NUMBER);
         try {
             long epochSeconds = in.asLong();
-            ZonedDateTime dateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC);
-            String iso8601String = dateTime.format(DateTimeFormatter.ISO_INSTANT);
+            String iso8601String = Instant.ofEpochSecond(epochSeconds).toString();
             output.emit(new TextNode(iso8601String), null);
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeException e) {
             throw new JsonQueryException(e);
         }        
     }
