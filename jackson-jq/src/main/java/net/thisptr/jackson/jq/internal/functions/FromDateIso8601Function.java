@@ -20,7 +20,8 @@ public class FromDateIso8601Function implements Function {
     public void apply(final Scope scope, final List<Expression> args, final JsonNode in, final Path ipath, final PathOutput output, final Version version) throws JsonQueryException {
         Preconditions.checkInputType("fromdateiso8601", in, JsonNodeType.STRING);
         try {
-            long epochSeconds = Instant.parse(in.asText()).getEpochSecond();
+            String iso8601String = in.asText();
+            long epochSeconds = Instant.parse(iso8601String).getEpochSecond();
             output.emit(JsonNodeUtils.asNumericNode(epochSeconds), null);
         } catch (DateTimeParseException e) {
             throw new JsonQueryException(e);
